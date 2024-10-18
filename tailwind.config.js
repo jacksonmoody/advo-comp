@@ -85,7 +85,10 @@ module.exports = ui({
       animation: {
         gradient: 'gradient 60s ease infinite',
         'ping-once': 'ping-once 1s cubic-bezier(0, 0, 0.2, 1);',
-        scroll: 'scroll 20s linear infinite',
+        scrollX: 'scrollX 20s linear infinite',
+        scrollXReverse: 'scrollXReverse 20s linear infinite',
+        scrollY: 'scrollY 8000s linear infinite',
+        scrollYReverse: 'scrollYReverse 8000s linear infinite',
       },
       keyframes: {
         gradient: {
@@ -109,9 +112,21 @@ module.exports = ui({
             opacity: 0,
           },
         },
-        scroll: {
+        scrollX: {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
+        },
+        scrollXReverse: {
+          '0%': { transform: 'translateX(-50%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        scrollY: {
+          '0%': { transform: 'translateY(0)' },
+          '100%': { transform: 'translateY(-50%)' },
+        },
+        scrollYReverse: {
+          '0%': { transform: 'translateY(-50%)' },
+          '100%': { transform: 'translateY(0)' },
         },
       },
     },

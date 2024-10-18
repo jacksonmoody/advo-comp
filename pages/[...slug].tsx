@@ -11,6 +11,7 @@ import {
   RealtimeChannel,
   RealtimeChannelSendResponse,
 } from '@supabase/supabase-js'
+import Image from 'next/image'
 
 import supabaseClient from '../client'
 import { Coordinates, Payload, User } from '../types'
@@ -21,6 +22,7 @@ import Loader from '../components/Loader'
 import Users from '../components/Users'
 import Onboarding from '../components/Onboarding'
 import WordList from '../components/WordList'
+import PoemBoard from '../components/PoemBoard'
 
 const MAX_ROOM_USERS = 50
 const X_THRESHOLD = 25
@@ -239,13 +241,31 @@ const Room: NextPage = () => {
             'linear-gradient(to right, gray 1px, transparent 1px),\n    linear-gradient(to bottom, gray 1px, transparent 1px)',
         }}
       />
-      <div className="flex flex-col h-full justify-between">
-        <div className="flex justify-between">
-          <Users users={users} />
-        </div>
+      <div className="flex w-full justify-end z-20">
+        <Users users={users} />
       </div>
 
-      <WordList />
+      <PoemBoard />
+
+      <div className="fixed top-0 left-0 right-0 h-16 z-10">
+        <WordList direction="horizontal" reverse={true} />
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 h-16 z-10">
+        <WordList direction="horizontal" reverse={false} />
+      </div>
+
+      <div className="fixed top-0 bottom-0 left-0 w-16 z-10">
+        <WordList direction="verticalLeft" reverse={false} />
+      </div>
+
+      <div className="fixed top-0 bottom-0 right-0 w-16 z-10">
+        <WordList direction="verticalRight" reverse={true} />
+      </div>
+
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 -z-10">
+        <Image src="/logo.svg" alt="Advocate Logo" width="100" height="100" />
+      </div>
 
       {Object.entries(users).reduce((acc, [userId, data]) => {
         const { x, y, color, hue } = data

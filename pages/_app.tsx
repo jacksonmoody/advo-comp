@@ -1,6 +1,8 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import { DndProvider } from 'react-dnd'
 
 function AdvocateComp({ Component, pageProps }: AppProps) {
   return (
@@ -20,7 +22,9 @@ function AdvocateComp({ Component, pageProps }: AppProps) {
           content="Realtime collaborative poetry board by the Harvard Advocate"
         />
       </Head>
-      <Component {...pageProps} />
+      <DndProvider backend={HTML5Backend}>
+        <Component {...pageProps} />
+      </DndProvider>
     </>
   )
 }

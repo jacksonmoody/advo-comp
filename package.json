@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.1.0",
@@ -15,7 +16,10 @@
     "lodash.samplesize": "^4.2.0",
     "lodash.throttle": "^4.1.1",
     "next": "^12.1.0",
+    "patch-package": "^8.0.0",
     "react": "17.0.2",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "17.0.2"
   },
   "devDependencies": {
