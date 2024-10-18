@@ -13,3 +13,9 @@ export interface User extends Coordinates {
   color: string
   hue: string
 }
+export interface DroppedWord {
+  id: number
+  word: string
+  x: number
+  y: number
+}

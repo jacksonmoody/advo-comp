@@ -12,7 +12,7 @@ export default function Word({ word }: { word: string }) {
     []
   )
   return (
-    <div ref={dragRef} style={{ opacity }}>
+    <div ref={dragRef} className={`bg-white cursor-move select-none opacity-${opacity * 100}`}>
       {word}
     </div>
   )

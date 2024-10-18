@@ -14,7 +14,7 @@ import {
 import Image from 'next/image'
 
 import supabaseClient from '../client'
-import { Coordinates, Payload, User } from '../types'
+import { Coordinates, Payload, User, DroppedWord } from '../types'
 import { getRandomColor, getRandomColors, getRandomUniqueColor } from '../lib/RandomColor'
 
 import Cursor from '../components/Cursor'
@@ -36,14 +36,13 @@ const Room: NextPage = () => {
 
   const usersRef = useRef<{ [key: string]: User }>({})
   const mousePositionRef = useRef<Coordinates>()
-
-  //  Manage the refs with a state so that the UI re-renders
   const [mousePosition, _setMousePosition] = useState<Coordinates>()
 
   const [isInitialStateSynced, setIsInitialStateSynced] = useState<boolean>(false)
   const [roomId, setRoomId] = useState<undefined | string>(undefined)
   const [users, setUsers] = useState<{ [key: string]: User }>({})
   const [onboarded, setOnboarded] = useState(false)
+  const [droppedWords, setDroppedWords] = useState<DroppedWord[]>([])
 
   const setMousePosition = (coordinates: Coordinates) => {
     mousePositionRef.current = coordinates
@@ -55,8 +54,6 @@ const Room: NextPage = () => {
     const _users = state[roomId]
 
     if (!_users) return
-
-    // Deconflict duplicate colours
     const colors = Object.keys(usersRef.current).length === 0 ? getRandomColors(_users.length) : []
 
     if (_users) {
@@ -105,12 +102,10 @@ const Room: NextPage = () => {
           let newRoomId
           const state = roomChannel.presenceState()
 
-          // User attempting to navigate directly to an existing room with users
           if (slugRoomId && slugRoomId in state && state[slugRoomId].length < MAX_ROOM_USERS) {
             newRoomId = slugRoomId
           }
 
-          // User will be assigned an existing room with the fewest users
           if (!newRoomId) {
             const [mostVacantRoomId, users] =
               Object.entries(state).sort(([, a], [, b]) => a.length - b.length)[0] ?? []
@@ -120,7 +115,6 @@ const Room: NextPage = () => {
             }
           }
 
-          // Generate an id if no existing rooms are available
           setRoomId(newRoomId ?? nanoid())
         })
         .subscribe()
@@ -161,7 +155,6 @@ const Room: NextPage = () => {
 
     const messageChannel = supabaseClient.channel(`chat_messages:${roomId}`)
 
-    // Listen for cursor positions from other users in the room
     messageChannel.on(
       REALTIME_LISTEN_TYPES.BROADCAST,
       { event: 'POS' },
@@ -217,6 +210,39 @@ const Room: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, isInitialStateSynced])
 
+  useEffect(() => {
+    if (!roomId || !isInitialStateSynced) return
+
+    const messageChannel = supabaseClient.channel(`chat_messages:${roomId}`)
+
+    messageChannel.on(
+      REALTIME_LISTEN_TYPES.BROADCAST,
+      { event: 'WORD' },
+      (payload: Payload<DroppedWord>) => {
+        setDroppedWords((prevWords) => {
+          const newWord = payload.payload!
+          const existingWord = prevWords.find((word) => word.id === newWord.id)
+
+          if (existingWord) {
+            return prevWords.map((word) => (word.id === newWord.id ? newWord : word))
+          }
+
+          return [...prevWords, newWord]
+        })
+      }
+    )
+
+    messageChannel.subscribe((status: `${REALTIME_SUBSCRIBE_STATES}`) => {
+      if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
+        messageChannel.send({ type: 'broadcast', event: 'WORD' }).catch(() => {})
+      }
+    })
+
+    return () => {
+      messageChannel.unsubscribe()
+    }
+  }, [roomId, isInitialStateSynced])
+
   if (!roomId) {
     return <Loader />
   }
@@ -245,7 +271,7 @@ const Room: NextPage = () => {
         <Users users={users} />
       </div>
 
-      <PoemBoard />
+      <PoemBoard droppedWords={droppedWords} setDroppedWords={setDroppedWords} />
 
       <div className="fixed top-0 left-0 right-0 h-16 z-10">
         <WordList direction="horizontal" reverse={true} />

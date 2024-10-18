@@ -1,17 +1,17 @@
 import { useMemo } from 'react'
 import { words } from '../lib/words'
-import { shuffleArray } from '../lib/shuffle'
+import { getRandomElements } from '../lib/utils'
 import Word from './Word'
 
 export default function WordList({ direction = 'horizontal', reverse = false }) {
-  const shuffledWords = useMemo(() => shuffleArray(words), [])
+  const shuffledWords = useMemo(() => getRandomElements(words), [])
 
   let animationClass = ''
-//   if (direction === 'horizontal') {
-//     animationClass = reverse ? 'animate-scrollXReverse' : 'animate-scrollX'
-//   } else {
-//     animationClass = reverse ? 'animate-scrollYReverse' : 'animate-scrollY'
-//   }
+  if (direction === 'horizontal') {
+    animationClass = reverse ? 'animate-scrollXReverse' : 'animate-scrollX'
+  } else {
+    animationClass = reverse ? 'animate-scrollYReverse' : 'animate-scrollY'
+  }
 
   const flexDirection = direction === 'horizontal' ? 'flex-row' : 'flex-col'
 

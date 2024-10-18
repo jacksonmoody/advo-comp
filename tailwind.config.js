@@ -87,8 +87,8 @@ module.exports = ui({
         'ping-once': 'ping-once 1s cubic-bezier(0, 0, 0.2, 1);',
         scrollX: 'scrollX 20s linear infinite',
         scrollXReverse: 'scrollXReverse 20s linear infinite',
-        scrollY: 'scrollY 8000s linear infinite',
-        scrollYReverse: 'scrollYReverse 8000s linear infinite',
+        scrollY: 'scrollY 200s linear infinite',
+        scrollYReverse: 'scrollYReverse 200s linear infinite',
       },
       keyframes: {
         gradient: {
