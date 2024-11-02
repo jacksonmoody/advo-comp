@@ -35,6 +35,7 @@ const Room: NextPage = () => {
   const localColorBackup = getRandomColor()
 
   const usersRef = useRef<{ [key: string]: User }>({})
+  const messageChannelRef = useRef<RealtimeChannel>()
   const mousePositionRef = useRef<Coordinates>()
   const [mousePosition, _setMousePosition] = useState<Coordinates>()
 
@@ -76,6 +77,46 @@ const Room: NextPage = () => {
         usersRef.current = updatedUsers
         return updatedUsers
       })
+    }
+  }
+
+  const handleWordDrop = async (newWord: DroppedWord) => {
+    setDroppedWords((prevWords) => {
+      const existingWord = prevWords.find((word) => word.id === newWord.id)
+
+      if (existingWord) {
+        return prevWords.map((word) => (word.id === newWord.id ? newWord : word))
+      }
+
+      return [...prevWords, newWord]
+    })
+
+    await supabaseClient.from('words').upsert([{ ...newWord, room_id: roomId }])
+
+    if (messageChannelRef.current) {
+      messageChannelRef.current
+        .send({
+          type: 'broadcast',
+          event: 'WORD',
+          payload: newWord,
+        })
+        .catch(() => {})
+    }
+  }
+
+  const handleWordRemove = async (word: DroppedWord) => {
+    setDroppedWords((prevWords) => prevWords.filter((w) => w.id !== word.id))
+
+    await supabaseClient.from('words').delete().eq('id', word.id)
+
+    if (messageChannelRef.current) {
+      messageChannelRef.current
+        .send({
+          type: 'broadcast',
+          event: 'WORD-DELETE',
+          payload: { ...word, x: undefined, y: undefined },
+        })
+        .catch(() => {})
     }
   }
 
@@ -155,6 +196,8 @@ const Room: NextPage = () => {
 
     const messageChannel = supabaseClient.channel(`chat_messages:${roomId}`)
 
+    messageChannelRef.current = messageChannel
+
     messageChannel.on(
       REALTIME_LISTEN_TYPES.BROADCAST,
       { event: 'POS' },
@@ -205,6 +248,7 @@ const Room: NextPage = () => {
 
     return () => {
       window.removeEventListener('mousemove', setMouseEvent)
+      messageChannel.unsubscribe()
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -232,15 +276,32 @@ const Room: NextPage = () => {
       }
     )
 
-    messageChannel.subscribe((status: `${REALTIME_SUBSCRIBE_STATES}`) => {
-      if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
-        messageChannel.send({ type: 'broadcast', event: 'WORD' }).catch(() => {})
+    messageChannel.on(
+      REALTIME_LISTEN_TYPES.BROADCAST,
+      { event: 'WORD-DELETE' },
+      (payload: Payload<DroppedWord>) => {
+        setDroppedWords((prevWords) => prevWords.filter((w) => w.id !== payload.payload!.id))
       }
-    })
+    )
 
     return () => {
       messageChannel.unsubscribe()
     }
+  }, [roomId, isInitialStateSynced])
+
+  useEffect(() => {
+    if (!roomId || !isInitialStateSynced) return
+
+    const fetchDroppedWords = async () => {
+      const { data } = await supabaseClient.from('words').select('*').eq('room_id', roomId)
+
+      const words = data as DroppedWord[]
+      if (words) {
+        setDroppedWords(words)
+      }
+    }
+
+    fetchDroppedWords()
   }, [roomId, isInitialStateSynced])
 
   if (!roomId) {
@@ -271,7 +332,11 @@ const Room: NextPage = () => {
         <Users users={users} />
       </div>
 
-      <PoemBoard droppedWords={droppedWords} setDroppedWords={setDroppedWords} />
+      <PoemBoard
+        droppedWords={droppedWords}
+        handleWordDrop={handleWordDrop}
+        handleWordRemove={handleWordRemove}
+      />
 
       <div className="fixed top-0 left-0 right-0 h-16 z-10">
         <WordList direction="horizontal" reverse={true} />

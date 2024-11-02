@@ -1,13 +1,15 @@
-import { useRef, LegacyRef, SetStateAction, Dispatch } from 'react'
+import { useRef, Ref } from 'react'
 import { useDrop } from 'react-dnd'
 import type { DroppedWord } from '../types'
 
 const PoemBoard = ({
   droppedWords,
-  setDroppedWords,
+  handleWordDrop,
+  handleWordRemove,
 }: {
   droppedWords: DroppedWord[]
-  setDroppedWords: Dispatch<SetStateAction<DroppedWord[]>>
+  handleWordDrop: (newWord: DroppedWord) => Promise<void>
+  handleWordRemove: (word: DroppedWord) => Promise<void>
 }) => {
   const dropAreaRef = useRef<HTMLDivElement>()
 
@@ -38,26 +40,21 @@ const PoemBoard = ({
         y,
       }
 
-      setDroppedWords((prevWords) => [...prevWords, newWord])
+      handleWordDrop(newWord)
     }
   }
 
-  const handleRemove = (id: number) => {
-    setDroppedWords((prevWords) => prevWords.filter((word) => word.id !== id))
-  }
-
   return (
-    <div ref={drop(dropAreaRef) as LegacyRef<HTMLDivElement>} className="relative w-full h-full">
+    <div ref={drop(dropAreaRef) as Ref<HTMLDivElement>} className="relative w-full h-full">
       {droppedWords.map((word) => (
-        <div
+        <p
           key={word.id}
-          onClick={() => handleRemove(word.id)}
-          className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 text-xl"
+          onClick={() => handleWordRemove(word)}
+          className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 text-xl hover:bg-red-50"
           style={{ left: word.x, top: word.y }}
-          title="Click to Remove"
         >
           {word.word}
-        </div>
+        </p>
       ))}
     </div>
   )
