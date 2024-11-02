@@ -339,19 +339,19 @@ const Room: NextPage = () => {
       />
 
       <div className="fixed top-0 left-0 right-0 h-16 z-10">
-        <WordList direction="horizontal" reverse={true} />
+        <WordList wordType="nouns" direction="horizontal" reverse={true} />
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 h-16 z-10">
-        <WordList direction="horizontal" reverse={false} />
+        <WordList wordType="adjectives" direction="horizontal" reverse={false} />
       </div>
 
       <div className="fixed top-0 bottom-0 left-0 w-16 z-10">
-        <WordList direction="verticalLeft" reverse={false} />
+        <WordList wordType="verbs-1" direction="verticalLeft" reverse={false} />
       </div>
 
       <div className="fixed top-0 bottom-0 right-0 w-16 z-10">
-        <WordList direction="verticalRight" reverse={true} />
+        <WordList wordType="verbs-2" direction="verticalRight" reverse={true} />
       </div>
 
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 -z-10">

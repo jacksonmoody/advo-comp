@@ -1,9 +1,36 @@
 import { useMemo } from 'react'
-import { words } from '../lib/words'
+import { nouns, adjectives, verbs } from '../lib/words'
 import { getRandomElements } from '../lib/utils'
 import Word from './Word'
 
-export default function WordList({ direction = 'horizontal', reverse = false }) {
+export default function WordList({
+  wordType,
+  direction = 'horizontal',
+  reverse = false,
+}: {
+  wordType: string
+  direction?: string
+  reverse?: boolean
+}) {
+  let words: string[] = []
+  const conjugate = require('conjugate')
+
+  switch (wordType) {
+    case 'nouns':
+      words = nouns
+      break
+    case 'adjectives':
+      words = adjectives
+      break
+    case 'verbs-1':
+      words = verbs.map((verb) => conjugate('I', verb))
+      break
+    case 'verbs-2':
+      words = verbs.map((verb) => conjugate('he', verb))
+      break
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const shuffledWords = useMemo(() => getRandomElements(words), [])
 
   let animationClass = ''
